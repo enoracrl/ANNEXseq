@@ -24,7 +24,7 @@ ANNEXA pipeline takes a reference genome, a reference annotation, and mapping fi
    The pipeline also performs quality control and an optional gene body coverage check.
 
 ## Pipeline Outline
-1. ### *Nanoseq*
+1. ### Nanoseq
    1. Demultiplexing ([`qcat`](https://github.com/nanoporetech/qcat); _optional_)
    2. Raw read cleaning ([NanoLyse](https://github.com/wdecoster/nanolyse); _optional_)
    3. Raw read QC ([`NanoPlot`](https://github.com/wdecoster/NanoPlot), [`FastQC`](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
