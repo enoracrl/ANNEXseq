@@ -20,6 +20,16 @@ if (params.input) {
 } else {
     exit 1, 'Input samplesheet not specified!'
 }
+// Check TransforKmers parameters
+if (params.filter) {
+  if (params.tfkmers_model) {
+    model = Channel.fromPath(params.tfkmers_model, checkIfExists: true)
+  } else { exit 1, "Please specify a valid transforkmers model path."}
+
+  if (params.tfkmers_tokenizer) {
+    tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
+  } else { exit 1, "Please specify a valid transforkmers tokenizer path."}
+}
 
 // Function to check if running offline
 def isOffline() {
@@ -100,12 +110,26 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 /* --    IMPORT LOCAL MODULES/SUBWORKFLOWS     -- */
 ////////////////////////////////////////////////////
 
+
+// nanoseq modules
 include { GET_TEST_DATA         } from '../modules/local/get_test_data'
 include { GET_NANOLYSE_FASTA    } from '../modules/local/get_nanolyse_fasta'
 include { QCAT                  } from '../modules/local/qcat'
 include { BAM_RENAME            } from '../modules/local/bam_rename'
 include { BAMBU                 } from '../modules/local/bambu'
 include { MULTIQC               } from '../modules/local/multiqc'
+
+// ANNEXA modules
+include { VALIDATE_INPUT_GTF             } from './modules/local/validate.nf'
+include { INDEX_BAM                      } from './modules/local/index_bam.nf'
+include { BAMBU                          } from './modules/local/bambu.nf'
+include { BAMBU_SPLIT_RESULTS            } from './modules/local/split.nf'
+include { FEELNC_CODPOT                  } from './modules/local/codpot.nf'
+include { FEELNC_FORMAT                  } from './modules/local/format.nf'
+include { RESTORE_BIOTYPE                } from './modules/local/restore_biotypes.nf'
+include { MERGE_NOVEL                    } from './modules/local/merge_novel.nf'
+include { TFKMERS                        } from './modules/local/transforkmers.nf'
+include { QC as QC_FULL; QC as QC_FILTER } from './modules/local/qc.nf'
 
 /*
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -147,7 +171,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 // Info required for completion email and summary
 def multiqc_report      = []
 
-workflow NANOSEQ{
+workflow ANNEXSEQ{
 
     // Pre-download test-dataset to get files for '--input_path' parameter
     // Nextflow is unable to recursively download directories via HTTPS
@@ -374,6 +398,62 @@ workflow NANOSEQ{
             ch_gene_counts       = BAMBU.out.ch_gene_counts
             ch_transcript_counts = BAMBU.out.ch_transcript_counts
             ch_software_versions = ch_software_versions.mix(BAMBU.out.versions.first().ifEmpty(null))
+
+            // ANNEXA
+
+                if (params.extend_annexa == true) {
+                    ///////////////////////////////////////////////////////////////////////////
+                    // PROCESS INPUT FILES
+                    ///////////////////////////////////////////////////////////////////////////
+                    samples = Channel
+                        .fromPath(input)
+                        .splitCsv()
+                        .map { it ->
+                                workflow.profile.contains('test') ?
+                                file("${baseDir}/${it[0]}", checkIfExists: true) :
+                                file(it[0], checkIfExists: true) }
+
+                    VALIDATE_INPUT_GTF(ch_gtf_bed)
+                    INDEX_BAM(samples)
+
+                    ///////////////////////////////////////////////////////////////////////////
+                    // NEW TRANSCRIPTS DISCOVERY
+                    ///////////////////////////////////////////////////////////////////////////
+                    //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
+                    //BAMBU_SPLIT_RESULTS(BAMBU.out.bambu_gtf)
+
+                    ///////////////////////////////////////////////////////////////////////////
+                    // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
+                    ///////////////////////////////////////////////////////////////////////////
+                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, ref_fa, BAMBU_SPLIT_RESULTS.out.novel_genes)
+                    FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
+                    RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
+                    MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out)
+
+                    QC_FULL(samples, 
+                            INDEX_BAM.out, 
+                            MERGE_NOVEL.out, 
+                            VALIDATE_INPUT_GTF.out, 
+                            BAMBU.out.gene_counts, 
+                            "full")
+
+                    ///////////////////////////////////////////////////////////////////////////
+                    // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
+                    ///////////////////////////////////////////////////////////////////////////
+                    if(params.filter) {
+                        TFKMERS(MERGE_NOVEL.out, ref_fa, BAMBU.out.ndr, 
+                                tokenizer, model, BAMBU.out.tx_counts)
+                        QC_FILTER(samples,
+                                INDEX_BAM.out, 
+                                TFKMERS.out.gtf, 
+                                VALIDATE_INPUT_GTF.out, 
+                                BAMBU.out.gene_counts, 
+                                "filter")
+                    }
+                }
+
+                // END ANNEXA
+
         } else {
 
             /*
