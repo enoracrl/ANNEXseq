@@ -15,9 +15,13 @@ The nanoseq pipeline takes raw Nanopore sequencing data as input and performs va
  
  MultiQC is used to present QC for raw read and alignment results.
 ### **Annexa**
-   The ANNEXA pipeline uses only three parameter files (a reference genome, a reference annotation and mapping files) and provides users with an extended annotation distinguishing between novel protein-coding (mRNA) versus long non-coding RNAs (lncRNA) genes.
+ANNEXA pipeline takes a reference genome, a reference annotation, and mapping files as inputs, and it provides an extended annotation that distinguishes between novel protein-coding (mRNA) and long non-coding RNAs (lncRNA) genes.
+
+   The pipeline performs transcriptome reconstruction and quantification, novel classification, and filtering based on multiple features.
+
+   The output is a final gtf file with a 3-level structure (gene, transcript, exon), and graphical outputs containing information about known and novel gene/transcript models such as length, number of spliced transcripts, and normalized expression levels. 
    
-   All known and novel gene/transcript models are further characterized through multiple features (length, number of spliced transcripts, normalized expression levels,...) available as graphical outputs.
+   The pipeline also performs quality control and an optional gene body coverage check.
 
 ## Pipeline Outline
 1. ### *Nanoseq*
