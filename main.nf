@@ -27,12 +27,20 @@ WorkflowMain.initialise(workflow, params, log)
 */
 
 include { NANOSEQ } from './workflows/nanoseq'
+include { ANNEXA } from './workflows/annexa'
 
 //
 // WORKFLOW: Run main nf-core/nanoseq analysis pipeline
 //
 workflow NFCORE_NANOSEQ {
     NANOSEQ ()
+}
+
+//
+// WORKFLOW: Run main ANNEXA analysis pipeline
+//
+workflow LOCAL_ANNEXA {
+    ANNEXA ()
 }
 
 /*
@@ -47,6 +55,10 @@ workflow NFCORE_NANOSEQ {
 //
 workflow {
     NFCORE_NANOSEQ ()
+}
+
+workflow {
+    LOCAL_ANNEXA ()
 }
 
 /*
