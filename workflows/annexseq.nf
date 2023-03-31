@@ -112,16 +112,16 @@ include { BAMBU                 } from '../modules/local/bambu'
 include { MULTIQC               } from '../modules/local/multiqc'
 
 // ANNEXA modules
-include { VALIDATE_INPUT_GTF             } from './modules/local/validate.nf'
-include { INDEX_BAM                      } from './modules/local/index_bam.nf'
-include { BAMBU                          } from './modules/local/bambu.nf'
-include { BAMBU_SPLIT_RESULTS            } from './modules/local/split.nf'
-include { FEELNC_CODPOT                  } from './modules/local/codpot.nf'
-include { FEELNC_FORMAT                  } from './modules/local/format.nf'
-include { RESTORE_BIOTYPE                } from './modules/local/restore_biotypes.nf'
-include { MERGE_NOVEL                    } from './modules/local/merge_novel.nf'
-include { TFKMERS                        } from './modules/local/transforkmers.nf'
-include { QC as QC_FULL; QC as QC_FILTER } from './modules/local/qc.nf'
+include { VALIDATE_INPUT_GTF             } from '../modules/local/validate.nf'
+include { INDEX_BAM                      } from '../modules/local/index_bam.nf'
+include { BAMBU                          } from '../modules/local/bambu.nf'
+include { BAMBU_SPLIT_RESULTS            } from '../modules/local/split.nf'
+include { FEELNC_CODPOT                  } from '../modules/local/codpot.nf'
+include { FEELNC_FORMAT                  } from '../modules/local/format.nf'
+include { RESTORE_BIOTYPE                } from '../modules/local/restore_biotypes.nf'
+include { MERGE_NOVEL                    } from '../modules/local/merge_novel.nf'
+include { TFKMERS                        } from '../modules/local/transforkmers.nf'
+include { QC as QC_FULL; QC as QC_FILTER } from '../modules/local/qc.nf'
 
 /*
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
