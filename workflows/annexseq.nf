@@ -443,7 +443,7 @@ workflow ANNEXSEQ{
                     ///////////////////////////////////////////////////////////////////////////
                     if(params.filter) {
                         TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
-                                params.tkkmers_tokenizer, ch_model, ch_transcript_counts)
+                                params.tfkmers_tokenizer, ch_model, ch_transcript_counts)
                         QC_FILTER(ch_sortbam,
                                 SAMTOOLS_INDEX.out.bai,
                                 TFKMERS.out.gtf,
