@@ -15,6 +15,7 @@ process BAMBU {
     path "counts_transcript.txt"   , emit: ch_transcript_counts
     path "extended_annotations.gtf", emit: extended_gtf
     path "versions.yml"            , emit: versions
+    path "bambu_ndr.csv"           , emit: ndr
 
     when:
     task.ext.when == null || task.ext.when
