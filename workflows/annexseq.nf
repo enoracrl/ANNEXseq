@@ -203,8 +203,8 @@ workflow ANNEXSEQ{
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
-    INPUT_TK ( ch_input, ch_input_path )
-        .set { ch_model }
+    //INPUT_TK ( ch_input, ch_input_path )
+        //.set { ch_model }
 
     ////// ici subworkflow
 
@@ -487,7 +487,7 @@ workflow ANNEXSEQ{
         RNA_MODIFICATION_XPORE_M6ANET( ch_sample, ch_nanopolish_sortbam )
     }
 
-    if (!params.skip_fusion_analysis && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) {
+    if (!params.skip_fusion_analysis && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) { //ici
 
         /*
          * SUBWORKFLOW: RNA_FUSIONS_JAFFAL
