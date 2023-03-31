@@ -4,7 +4,7 @@
 
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
 
-workflow INPUT_CHECK {
+workflow INPUT_TK {
     take:
     samplesheet // file: /path/to/samplesheet.csv
     input_path
@@ -17,16 +17,14 @@ workflow INPUT_CHECK {
         .csv
         .splitCsv ( header:true, sep:',' )
         .map { get_sample_info(it, params.genomes) }
-        .map { it -> [ it[0], it[2], it[3], it[4], it[5], it[6], it[1] , it[7] ] } // a modif
-        .set { ch_sample }
+        .map { it -> [ it[0], it[8] ] } // a modif
+        .set { ch_model }
 
     emit:
-    ch_sample // [ sample, barcode, fasta, gtf, is_transcripts, annotation_str ]
+    ch_model // [ sample, model]
 }
 
 
-// Function to resolve fasta and gtf file if using iGenomes
-// Returns [ sample, input_file, barcode, fasta, gtf, is_transcripts, annotation_str, nanopolish_fast5 ]
 def get_sample_info(LinkedHashMap sample, LinkedHashMap genomeMap) {
     def meta = [:]
     meta.id  = sample.sample

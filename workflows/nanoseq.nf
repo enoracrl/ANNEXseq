@@ -21,15 +21,7 @@ if (params.input) {
     exit 1, 'Input samplesheet not specified!'
 }
 // Check TransforKmers parameters
-if (params.filter) {
-  if (params.tfkmers_model) {
-    model = Channel.fromPath(params.tfkmers_model, checkIfExists: true)
-  } else { exit 1, "Please specify a valid transforkmers model path."}
 
-  if (params.tfkmers_tokenizer) {
-    tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
-  } else { exit 1, "Please specify a valid transforkmers tokenizer path."}
-}
 
 // Function to check if running offline
 def isOffline() {
@@ -136,6 +128,7 @@ include { QC as QC_FULL; QC as QC_FILTER } from './modules/local/qc.nf'
  */
 
 include { INPUT_CHECK                      } from '../subworkflows/local/input_check'
+include { INPUT_TK                         } from '../subworkflows/local/input_tk'
 include { PREPARE_GENOME                   } from '../subworkflows/local/prepare_genome'
 include { QCFASTQ_NANOPLOT_FASTQC          } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
 include { ALIGN_GRAPHMAP2                  } from '../subworkflows/local/align_graphmap2'
@@ -191,11 +184,11 @@ workflow ANNEXSEQ{
                 ch_input_path = 'not_changed'
             }
         }
-    } else {
+    } else {    // ici
         if (params.input_path) {
             ch_input_path = Channel.fromPath(params.input_path, checkIfExists: true)
         } else {
-            ch_input_path = 'not_changed'
+            ch_input_path = 'not_changed'  // ici
         }
     }
 
@@ -209,6 +202,12 @@ workflow ANNEXSEQ{
      */
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
+
+    INPUT_TK ( ch_input, ch_input_path )
+        .set { ch_model }
+
+    ////// ici subworkflow
+
 
     if (!params.skip_demultiplexing) {
 
@@ -224,10 +223,10 @@ workflow ANNEXSEQ{
             .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
             .set { ch_fastq }
         ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
-    } else {
-        if (!params.skip_alignment) {
+    } else {     // ici
+        if (!params.skip_alignment) {  // ici
             ch_sample
-                .map { it -> if (it[6].toString().endsWith('.gz')) [ it[0], it[6], it[2], it[1], it[4], it[5] ] }
+                .map { it -> if (it[6].toString().endsWith('.gz')) [ it[0], it[6], it[2], it[1], it[4], it[5] ] } // a modif
                 .set { ch_fastq }
         } else {
             ch_fastq = Channel.empty()
@@ -262,7 +261,7 @@ workflow ANNEXSEQ{
     }
 
     ch_fastqc_multiqc = Channel.empty()
-    if (!params.skip_qc) {
+    if (!params.skip_qc) { // ici
 
         /*
          * SUBWORKFLOW: Fastq QC with Nanoplot and fastqc
@@ -273,7 +272,7 @@ workflow ANNEXSEQ{
     }
 
     ch_samtools_multiqc = Channel.empty()
-    if (!params.skip_alignment) {
+    if (!params.skip_alignment) { // ici
 
         /*
          * SUBWORKFLOW: Make chromosome size file and covert GTF to BED12
@@ -285,7 +284,7 @@ workflow ANNEXSEQ{
         ch_fai         = PREPARE_GENOME.out.ch_fai
         ch_software_versions = ch_software_versions.mix(PREPARE_GENOME.out.samtools_version.first().ifEmpty(null))
         ch_software_versions = ch_software_versions.mix(PREPARE_GENOME.out.gtf2bed_version.first().ifEmpty(null))
-        if (params.aligner == 'minimap2') {
+        if (params.aligner == 'minimap2') { // ici
 
             /*
             * SUBWORKFLOW: Align fastq files with minimap2 and sort bam files
@@ -332,7 +331,7 @@ workflow ANNEXSEQ{
         }
 
         ch_bedtools_version = Channel.empty()
-        if (!params.skip_bigwig) {
+        if (!params.skip_bigwig) { // ici
 
             /*
              * SUBWORKFLOW: Convert BAM -> BEDGraph -> BigWig
@@ -341,7 +340,7 @@ workflow ANNEXSEQ{
             ch_bedtools_version = ch_bedtools_version.mix(BEDTOOLS_UCSC_BIGWIG.out.bedtools_version.first().ifEmpty(null))
             ch_software_versions = ch_software_versions.mix(BEDTOOLS_UCSC_BIGWIG.out.bedgraphtobigwig_version.first().ifEmpty(null))
         }
-        if (!params.skip_bigbed) {
+        if (!params.skip_bigbed) { // ici
 
             /*
              * SUBWORKFLOW: Convert BAM -> BED12 -> BigBED
@@ -368,7 +367,7 @@ workflow ANNEXSEQ{
 
     ch_featurecounts_gene_multiqc       = Channel.empty()
     ch_featurecounts_transcript_multiqc = Channel.empty()
-    if (!params.skip_quantification && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) {
+    if (!params.skip_quantification && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) { // ici
 
         // Check that reference genome and annotation are the same for all samples if perfoming quantification
         // Check if we have replicates and multiple conditions in the input samplesheet
@@ -405,7 +404,7 @@ workflow ANNEXSEQ{
                     ///////////////////////////////////////////////////////////////////////////
                     // PROCESS INPUT FILES
                     ///////////////////////////////////////////////////////////////////////////
-                    samples = Channel
+                    samples = Channel //////////////////// à modifier
                         .fromPath(input)
                         .splitCsv()
                         .map { it ->
@@ -430,24 +429,24 @@ workflow ANNEXSEQ{
                     RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
                     MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out)
 
-                    QC_FULL(samples, 
-                            INDEX_BAM.out, 
-                            MERGE_NOVEL.out, 
-                            VALIDATE_INPUT_GTF.out, 
-                            BAMBU.out.gene_counts, 
+                    QC_FULL(samples,
+                            INDEX_BAM.out,
+                            MERGE_NOVEL.out,
+                            VALIDATE_INPUT_GTF.out,
+                            BAMBU.out.gene_counts,
                             "full")
 
                     ///////////////////////////////////////////////////////////////////////////
                     // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
                     ///////////////////////////////////////////////////////////////////////////
                     if(params.filter) {
-                        TFKMERS(MERGE_NOVEL.out, ref_fa, BAMBU.out.ndr, 
+                        TFKMERS(MERGE_NOVEL.out, ref_fa, BAMBU.out.ndr,
                                 tokenizer, model, BAMBU.out.tx_counts)
                         QC_FILTER(samples,
-                                INDEX_BAM.out, 
-                                TFKMERS.out.gtf, 
-                                VALIDATE_INPUT_GTF.out, 
-                                BAMBU.out.gene_counts, 
+                                INDEX_BAM.out,
+                                TFKMERS.out.gtf,
+                                VALIDATE_INPUT_GTF.out,
+                                BAMBU.out.gene_counts,
                                 "filter")
                     }
                 }
