@@ -384,7 +384,7 @@ workflow ANNEXSEQ{
         //  MULTIPLE_CONDITIONS = ch_sample.map { it -> it[0].split('_')[0..-2].join('_') }.unique().count().val > 1
 
         ch_r_version = Channel.empty()
-        if (params.quantification_method == 'bambu') {
+        if (params.quantification_method == 'bambu') { //ici
             ch_sample
                 .map { it -> [ it[2], it[3] ]}
                 .unique()
@@ -396,6 +396,8 @@ workflow ANNEXSEQ{
             BAMBU ( ch_sample_annotation, ch_sortbam.collect{ it [1] } )
             ch_gene_counts       = BAMBU.out.ch_gene_counts
             ch_transcript_counts = BAMBU.out.ch_transcript_counts
+            ch_gtf_bed = BAMBU.out.extended_gtf
+            ch_ndr = BAMBU.out.ndr
             ch_software_versions = ch_software_versions.mix(BAMBU.out.versions.first().ifEmpty(null))
 
             // ANNEXA
@@ -413,24 +415,24 @@ workflow ANNEXSEQ{
                                 file(it[0], checkIfExists: true) }
 
                     VALIDATE_INPUT_GTF(ch_gtf_bed)
-                    INDEX_BAM(samples)
+                    // ca degage INDEX_BAM(ch_sortbam) // pas sur
 
                     ///////////////////////////////////////////////////////////////////////////
                     // NEW TRANSCRIPTS DISCOVERY
                     ///////////////////////////////////////////////////////////////////////////
                     //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
-                    //BAMBU_SPLIT_RESULTS(BAMBU.out.bambu_gtf)
+                    BAMBU_SPLIT_RESULTS(ch_gtf_bed)
 
                     ///////////////////////////////////////////////////////////////////////////
                     // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
                     ///////////////////////////////////////////////////////////////////////////
-                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, ref_fa, BAMBU_SPLIT_RESULTS.out.novel_genes)
+                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, ch_fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
                     FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
                     RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
-                    MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out)
+                    MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
 
-                    QC_FULL(samples,
-                            INDEX_BAM.out,
+                    QC_FULL(ch_sortbam,
+                            SAMTOOLS_INDEX.out.bai,
                             MERGE_NOVEL.out,
                             VALIDATE_INPUT_GTF.out,
                             BAMBU.out.gene_counts,
@@ -440,13 +442,13 @@ workflow ANNEXSEQ{
                     // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
                     ///////////////////////////////////////////////////////////////////////////
                     if(params.filter) {
-                        TFKMERS(MERGE_NOVEL.out, ref_fa, BAMBU.out.ndr,
-                                tokenizer, model, BAMBU.out.tx_counts)
-                        QC_FILTER(samples,
-                                INDEX_BAM.out,
+                        TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
+                                params.tkkmers_tokenizer, ch_model, ch_transcript_counts)
+                        QC_FILTER(ch_sortbam,
+                                SAMTOOLS_INDEX.out.bai,
                                 TFKMERS.out.gtf,
                                 VALIDATE_INPUT_GTF.out,
-                                BAMBU.out.gene_counts,
+                                ch_gene_counts,
                                 "filter")
                     }
                 }
