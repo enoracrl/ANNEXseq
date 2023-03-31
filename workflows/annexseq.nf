@@ -203,8 +203,8 @@ workflow ANNEXSEQ{
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
-    //INPUT_TK ( ch_input, ch_input_path )
-        //.set { ch_model }
+    INPUT_TK ( ch_input, ch_input_path )
+        .set { ch_model }
 
     ////// ici subworkflow
 
