@@ -49,11 +49,11 @@ def read_head(handle, num_lines=10):
 def check_samplesheet(file_in, updated_path, file_out):
     """
     This function checks that the samplesheet follows the following structure:
-    group,replicate,barcode,input_file,fasta,gtf
-    MCF7,1,,MCF7_directcDNA_replicate1.fastq.gz,genome.fa,
-    MCF7,2,,MCF7_directcDNA_replicate3.fastq.gz,genome.fa,genome.gtf
-    K562,1,,K562_directcDNA_replicate1.fastq.gz,genome.fa,
-    K562,2,,K562_directcDNA_replicate4.fastq.gz,,transcripts.fa
+    group,replicate,barcode,input_file,fasta,gtf, model
+    MCF7,1,,MCF7_directcDNA_replicate1.fastq.gz,genome.fa, /model
+    MCF7,2,,MCF7_directcDNA_replicate3.fastq.gz,genome.fa,genome.gtf, /model
+    K562,1,,K562_directcDNA_replicate1.fastq.gz,genome.fa, /model
+    K562,2,,K562_directcDNA_replicate4.fastq.gz,,transcripts.fa, /model
     """
 
     input_extensions = []
@@ -61,7 +61,7 @@ def check_samplesheet(file_in, updated_path, file_out):
     with open(file_in, "r") as fin:
         ## Check header
         MIN_COLS = 3
-        HEADER = ["group", "replicate", "barcode", "input_file", "fasta", "gtf"]
+        HEADER = ["group", "replicate", "barcode", "input_file", "fasta", "gtf", "model"]
         header = fin.readline().strip().split(",")
         if header[: len(HEADER)] != HEADER:
             print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
@@ -80,7 +80,7 @@ def check_samplesheet(file_in, updated_path, file_out):
                 print_error("Invalid number of populated columns (minimum = {})!".format(MIN_COLS), "Line", line)
 
             ## Check group name entries
-            group, replicate, barcode, input_file, fasta, gtf = lspl[: len(HEADER)]
+            group, replicate, barcode, input_file, fasta, gtf, model = lspl[: len(HEADER)]
             if group:
                 if group.find(" ") != -1:
                     print_error("Group entry contains spaces!", "Line", line)
