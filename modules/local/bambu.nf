@@ -34,5 +34,7 @@ process BAMBU {
         bioconductor-bambu: \$(Rscript -e "library(bambu); cat(as.character(packageVersion('bambu')))")
         bioconductor-bsgenome: \$(Rscript -e "library(BSgenome); cat(as.character(packageVersion('BSgenome')))")
     END_VERSIONS
+
+    sed -i 's/*/./g' extended_annotations.gtf
     """
 }
