@@ -22,6 +22,15 @@ if (params.input) {
 }
 // Check TransforKmers parameters
 
+if (params.extend_annexa) {
+    if (params.filter) {
+        if (params.tfkmers_tokenizer) {
+            tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
+        } else { exit 1, "Please specify a valid transforkmers tokenizer path."}
+    }
+}
+
+
 
 // Function to check if running offline
 def isOffline() {
@@ -114,7 +123,6 @@ include { MULTIQC               } from '../modules/local/multiqc'
 // ANNEXA modules
 include { VALIDATE_INPUT_GTF             } from '../modules/local/validate.nf'
 include { INDEX_BAM                      } from '../modules/local/index_bam.nf'
-include { BAMBU                          } from '../modules/local/bambu.nf'
 include { BAMBU_SPLIT_RESULTS            } from '../modules/local/split.nf'
 include { FEELNC_CODPOT                  } from '../modules/local/codpot.nf'
 include { FEELNC_FORMAT                  } from '../modules/local/format.nf'
@@ -402,7 +410,7 @@ workflow ANNEXSEQ{
 
             // ANNEXA
 
-                if (params.extend_annexa == true) {
+                if (params.extend_annexa) {
                     ///////////////////////////////////////////////////////////////////////////
                     // PROCESS INPUT FILES
                     ///////////////////////////////////////////////////////////////////////////
@@ -443,7 +451,7 @@ workflow ANNEXSEQ{
                     ///////////////////////////////////////////////////////////////////////////
                     if(params.filter) {
                         TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
-                                params.tfkmers_tokenizer, ch_model, ch_transcript_counts)
+                                tokenizer, ch_model, ch_transcript_counts)
                         QC_FILTER(ch_sortbam,
                                 SAMTOOLS_INDEX.out.bai,
                                 TFKMERS.out.gtf,
