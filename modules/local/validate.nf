@@ -8,7 +8,7 @@ process VALIDATE_INPUT_GTF {
   file gtf
 
   output:
-  file 'input.formatted.gtf'
+  file 'input.formatted.gtf' 
 
   """
   validate_gtf.py ${gtf} > input.formatted.gtf

@@ -404,6 +404,7 @@ workflow ANNEXSEQ{
             /*
              * MODULE: Quantification and novel isoform detection with bambu
              */
+            VALIDATE_INPUT_GTF(ch_gtf_bed)
             BAMBU ( ch_sample_annotation, ch_sortbam.collect{ it [1] } )
             ch_gene_counts       = BAMBU.out.ch_gene_counts
             ch_transcript_counts = BAMBU.out.ch_transcript_counts
@@ -424,7 +425,6 @@ workflow ANNEXSEQ{
                                 workflow.profile.contains('test') ?
                                 file("${baseDir}/${it[0]}", checkIfExists: true) :
                                 file(it[0], checkIfExists: true) } */
-                    VALIDATE_INPUT_GTF(ch_gtf_bed)
                     // ca degage INDEX_BAM(ch_sortbam) // pas sur
 
                     ///////////////////////////////////////////////////////////////////////////
@@ -433,10 +433,14 @@ workflow ANNEXSEQ{
                     //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
                     BAMBU_SPLIT_RESULTS(ch_gtf_bed)
 
+                    ch_fasta
+                        .map { it -> [ it[1]] }  // [ gtf, annotation_str ]
+                        .set { fasta }
+
                     ///////////////////////////////////////////////////////////////////////////
                     // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
                     ///////////////////////////////////////////////////////////////////////////
-                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, ch_fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
+                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
                     FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
                     RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
                     MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
