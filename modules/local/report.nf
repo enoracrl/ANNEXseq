@@ -1,5 +1,5 @@
 process REPORT {
-  conda (params.enable_conda ? "$baseDir/environment.yml" : null)
+  conda (params.conda.enabled ? "$baseDir/environment.yml" : null)
   container "ghcr.io/igdrion/annexa:${workflow.revision? workflow.revision: "main"}"
   publishDir "$params.outdir/qc/${prefix}", mode: 'copy'
 

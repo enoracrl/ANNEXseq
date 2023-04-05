@@ -1,26 +1,29 @@
 def logHeader(params) {
     // Log colors ANSI codes
-    c_dim = "\033[2m";
-    c_green = "\033[0;32m";
-    c_purple = "\033[0;35m";
-    c_reset = "\033[0m";
+    c_dim       = "\033[2m";
+    c_green     = "\033[0;32m";
+    c_purple    = "\033[0;35m";
+    c_pink      = "\033[0;35m";
+    c_reset     = "\033[0m";
 
     return """-${c_dim}-------------------------------------${c_reset}-
-${c_green}    ___    _   ___   _________  __ ___
-   /   |  / | / / | / / ____/ |/ /
-  / /| | /  |/ /  |/ / __/  |   /
- / ___ |/ /|  / /|  / /___ /   |
-/_/  |_/_/ |_/_/ |_/_____//_/|_/SEQ!!!!
-                                       ${c_reset}
+${c_green}
+ ______      __  __      __  __      ____       __   __
+/\  _  \    /\ \/\ \    /\ \/\ \    /\  _`\    /\ \ /\ \
+\ \ \L\ \   \ \ `\\ \   \ \ `\\ \   \ \ \L\_\  \ `\`\/'/'        ____     __      __
+ \ \  __ \   \ \ , ` \   \ \ , ` \   \ \  _\L   `\/ > <         /',__\  /'__`\  /'__`\
+  \ \ \/\ \   \ \ \`\ \   \ \ \`\ \   \ \ \L\ \    \/'/\`\     /\__, `\/\  __/ /\ \L\ \
+   \ \_\ \_\   \ \_\ \_\   \ \_\ \_\   \ \____/    /\_\\ \_\   \/\____/\ \____\\ \___, \
+    \/_/\/_/    \/_/\/_/    \/_/\/_/    \/___/     \/_/ \/_/    \/___/  \/____/ \/___/\ \
+                                                                                     \ \_\
+                                                                                      \/_/
+${c_reset}
 -${c_dim}-------------------------------------${c_reset}-
 ${c_purple}github.com/igdrion/ANNEXA${c_reset}
-Reference Annotation: ${params.gtf}
-Reference Genome    : ${params.fa}
 Input Samplesheet   : ${params.input}
 ---
 Filtering           : ${params.filter}
-Tfkmers Model       : ${params.tfkmers_model}
-Tfkmers Tokenizer   : ${params.tfkmers_tokenizer}
+sTfkmers Tokenizer   : ${params.tfkmers_tokenizer}
 Tfkmers Threshold   : ${params.tfkmers_threshold}
 Bambu Threshold     : ${params.bambu_threshold}
 Filtering operation : ${params.operation}
