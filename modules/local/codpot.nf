@@ -1,5 +1,5 @@
 process FEELNC_CODPOT {
-  conda (params.conda.enabled ? "bioconda::feelnc=0.2" : null)
+  conda (params.enable_conda ? "bioconda::feelnc=0.2" : null)
   container "${ workflow.containerEngine == 'singularity' ?
                 'https://depot.galaxyproject.org/singularity/feelnc:0.2--pl526_0' :
                 'quay.io/biocontainers/feelnc:0.2--pl526_0' }"

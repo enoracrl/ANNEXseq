@@ -114,8 +114,6 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ////////////////////////////////////////////////////
 /* --    IMPORT LOCAL MODULES/SUBWORKFLOWS     -- */
 ////////////////////////////////////////////////////
-include { logHeader             } from './modules/header.nf'
-log.info logHeader(params)
 
 // nanoseq modules
 include { GET_TEST_DATA         } from '../modules/local/get_test_data'

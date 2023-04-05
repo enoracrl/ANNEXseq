@@ -1,5 +1,5 @@
 process GENEBODY_COVERAGE {
-  conda (params.conda.enabled ? "bioconda::rseqc=4.0" : null)
+  conda (params.enable_conda ? "bioconda::rseqc=4.0" : null)
   container "${ workflow.containerEngine == 'singularity' ?
                 'https://depot.galaxyproject.org/singularity/rseqc:4.0.0--py310h1425a21_2' :
                 'quay.io/biocontainers/rseqc:4.0.0--py310h1425a21_2' }"

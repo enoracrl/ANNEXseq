@@ -323,14 +323,19 @@ class NfcoreTemplate {
         String.format(
             """\n
             ${dashedLine(monochrome_logs)}
-                                                    ${colors.green},--.${colors.black}/${colors.green},-.${colors.reset}
-            ${colors.blue}        ___     __   __   __   ___     ${colors.green}/,-._.--~\'${colors.reset}
-            ${colors.blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${colors.yellow}}  {${colors.reset}
-            ${colors.blue}  | \\| |       \\__, \\__/ |  \\ |___     ${colors.green}\\`-._,-`-,${colors.reset}
-                                                    ${colors.green}`._,._,\'${colors.reset}
+            ${colors.blue} ______      __  __      __  __      ____       __   __
+            /\\  _  \\    /\\ \\/\\ \\    /\\ \\/\\ \\    /\\  _`\\    /\\ \\ /\\ \\
+            \\ \\ \\L\\ \\   \\ \\ `\\\\ \\   \\ \\ `\\\\ \\   \\ \\ \\L\\_\\  \\ `\\`\\/'/'         ____     __      __
+             \\ \\  __ \\   \\ \\ , ` \\   \\ \\ , ` \\   \\ \\  _\\L   `\\/ > <          /',__\\  /'__`\\  /'__`\\
+              \\ \\ \\/\\ \\   \\ \\ \\`\\ \\   \\ \\ \\`\\ \\   \\ \\ \\L\\ \\    \\/'/\\`\\      /\\__, `\\/\\  __/ /\\ \\L\\ \\
+               \\ \\_\\ \\_\\   \\ \\_\\ \\_\\   \\ \\_\\ \\_\\   \\ \\____/    /\\_\\\\ \\_\\    \\/\\____/\\ \\____\\\\ \\___, \\
+                \\/_/\\/_/    \\/_/\\/_/    \\/_/\\/_/    \\/___/     \\/_/ \\/_/     \\/___/  \\/____/ \\/___/\\ \\
+                                                                                                  \\ \\_\\
+                                                                                                   \\/_/${colors.reset}
             ${colors.purple}  ${workflow.manifest.name} ${workflow_version}${colors.reset}
             ${dashedLine(monochrome_logs)}
             """.stripIndent()
         )
     }
 }
+
