@@ -68,4 +68,3 @@ write.csv(
 
 # Write GTF and counts
 writeBambuOutput(se, output_tag)
-

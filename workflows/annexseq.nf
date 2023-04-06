@@ -216,6 +216,11 @@ workflow ANNEXSEQ{
 
     INPUT_TK ( ch_input, ch_input_path )
         .set { ch_model }
+    
+    ch_sample
+        .map { it -> [it[3]] }
+        .unique()
+        .set { ch_gtf }
 
     ////// ici subworkflow
 
@@ -404,7 +409,8 @@ workflow ANNEXSEQ{
             /*
              * MODULE: Quantification and novel isoform detection with bambu
              */
-            VALIDATE_INPUT_GTF(ch_gtf_bed)
+            
+            VALIDATE_INPUT_GTF(ch_gtf)
             BAMBU ( ch_sample_annotation, ch_sortbam.collect{ it [1] } )
             ch_gene_counts       = BAMBU.out.ch_gene_counts
             ch_transcript_counts = BAMBU.out.ch_transcript_counts
@@ -414,58 +420,58 @@ workflow ANNEXSEQ{
 
             // ANNEXA
 
-                if (!params.skip_annexa) {
-                    ///////////////////////////////////////////////////////////////////////////
-                    // PROCESS INPUT FILES
-                    ///////////////////////////////////////////////////////////////////////////
-                    /* samples = Channel
-                        .fromPath(input)
-                        .splitCsv()
-                        .map { it ->
-                                workflow.profile.contains('test') ?
-                                file("${baseDir}/${it[0]}", checkIfExists: true) :
-                                file(it[0], checkIfExists: true) } */
-                    // ca degage INDEX_BAM(ch_sortbam) // pas sur
+            if (!params.skip_annexa) {
+                ///////////////////////////////////////////////////////////////////////////
+                // PROCESS INPUT FILES
+                ///////////////////////////////////////////////////////////////////////////
+                /* samples = Channel
+                    .fromPath(input)
+                    .splitCsv()
+                    .map { it ->
+                            workflow.profile.contains('test') ?
+                            file("${baseDir}/${it[0]}", checkIfExists: true) :
+                            file(it[0], checkIfExists: true) } */
+                // ca degage INDEX_BAM(ch_sortbam) // pas sur
 
-                    ///////////////////////////////////////////////////////////////////////////
-                    // NEW TRANSCRIPTS DISCOVERY
-                    ///////////////////////////////////////////////////////////////////////////
-                    //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
-                    BAMBU_SPLIT_RESULTS(ch_gtf_bed)
+                ///////////////////////////////////////////////////////////////////////////
+                // NEW TRANSCRIPTS DISCOVERY
+                ///////////////////////////////////////////////////////////////////////////
+                //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
+                BAMBU_SPLIT_RESULTS(ch_gtf_bed)
 
-                    ch_fasta
-                        .map { it -> [ it[1]] }  // [ gtf, annotation_str ]
-                        .set { fasta }
+                ch_fasta
+                    .map { it -> [ it[1]] }  // [ gtf, annotation_str ]
+                    .set { fasta }
 
-                    ///////////////////////////////////////////////////////////////////////////
-                    // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
-                    ///////////////////////////////////////////////////////////////////////////
-                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
-                    FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
-                    RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
-                    MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
+                ///////////////////////////////////////////////////////////////////////////
+                // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
+                ///////////////////////////////////////////////////////////////////////////
+                FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
+                FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
+                RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
+                MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
 
-                    QC_FULL(ch_sortbam,
+                QC_FULL(ch_sortbam,
+                        BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
+                        MERGE_NOVEL.out,
+                        VALIDATE_INPUT_GTF.out,
+                        BAMBU.out.ch_gene_counts,
+                        "full")
+
+                ///////////////////////////////////////////////////////////////////////////
+                // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
+                ///////////////////////////////////////////////////////////////////////////
+                if(params.filter) {
+                    TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
+                            tokenizer, ch_model, ch_transcript_counts)
+                    QC_FILTER(ch_sortbam,
                             BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
-                            MERGE_NOVEL.out,
+                            TFKMERS.out.gtf,
                             VALIDATE_INPUT_GTF.out,
-                            BAMBU.out.ch_gene_counts,
-                            "full")
-
-                    ///////////////////////////////////////////////////////////////////////////
-                    // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
-                    ///////////////////////////////////////////////////////////////////////////
-                    if(params.filter) {
-                        TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
-                                tokenizer, ch_model, ch_transcript_counts)
-                        QC_FILTER(ch_sortbam,
-                                BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
-                                TFKMERS.out.gtf,
-                                VALIDATE_INPUT_GTF.out,
-                                ch_gene_counts,
-                                "filter")
-                    }
+                            ch_gene_counts,
+                            "filter")
                 }
+            }
 
                 // END ANNEXA
 
