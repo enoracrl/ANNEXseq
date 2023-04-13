@@ -19,9 +19,8 @@
   "bugs": {
     "url": "https://github.com/enoracrl/ANNEXseq/issues"
   },
+  "publishConfig": {
+    "@enoracrl:registry": "https://npm.pkg.github.com"
+  },
   "homepage": "https://github.com/enoracrl/ANNEXseq#readme"
-  
- "publishConfig": {
-   "@enoracrl:registry": "https://npm.pkg.github.com"
- }
 }
