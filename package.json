@@ -20,4 +20,8 @@
     "url": "https://github.com/enoracrl/ANNEXseq/issues"
   },
   "homepage": "https://github.com/enoracrl/ANNEXseq#readme"
+  
+ "publishConfig": {
+   "@enoracrl:registry": "https://npm.pkg.github.com"
+ }
 }
