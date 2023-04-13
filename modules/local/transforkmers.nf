@@ -14,7 +14,7 @@ workflow TFKMERS {
 
   main:
     EXTRACT_TSS_REGIONS(
-      novel_gtf,
+      novel_gtf
     )
 
     EXTRACT_TSS_SEQUENCES(

@@ -96,12 +96,21 @@ if (!params.skip_annexa) {
         exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'cDNA'"
     }
     else{
-        if (params.tfkmers_tokenizer) {
-            tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
-        }
-        else {
-            exit 1, "Please specify a valid transforkmers tokenizer path."
+        if (params.filter) {
+            if (params.tfkmers_model) {
+                model = Channel.fromPath(params.tfkmers_model, checkIfExists: true)
+            } 
+            else { 
+                exit 1, "Please specify a valid transforkmers model path."
             }
+
+            if (params.tfkmers_tokenizer) {
+                tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
+            }
+            else {
+                exit 1, "Please specify a valid transforkmers tokenizer path."
+            }
+        }
     }
 }
 ////////////////////////////////////////////////////
@@ -214,8 +223,11 @@ workflow ANNEXSEQ{
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
+    /*
     INPUT_TK ( ch_input, ch_input_path )
+        .unique()
         .set { ch_model }
+    */
     
     ch_sample
         .map { it -> [it[3]] }
@@ -453,7 +465,7 @@ workflow ANNEXSEQ{
 
                 QC_FULL(ch_sortbam,
                         BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
-                        MERGE_NOVEL.out,
+                        MERGE_NOVEL.out.novel_full,
                         VALIDATE_INPUT_GTF.out,
                         BAMBU.out.ch_gene_counts,
                         "full")
@@ -462,8 +474,8 @@ workflow ANNEXSEQ{
                 // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
                 ///////////////////////////////////////////////////////////////////////////
                 if(params.filter) {
-                    TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
-                            tokenizer, ch_model, ch_transcript_counts)
+                    TFKMERS(MERGE_NOVEL.out.novel_full, fasta, ch_ndr, //doute sur ch_fasta
+                            tokenizer, model, ch_transcript_counts)
                     QC_FILTER(ch_sortbam,
                             BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
                             TFKMERS.out.gtf,
