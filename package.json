@@ -1,6 +1,6 @@
 {
   "name": "@enoracrl/annexseq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "test",
   "main": "index.js",
   "directories": {
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/enoracrl/ANNEXseq.git"
   },
-  "author": "",
+  "author": "@enoracrl",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/enoracrl/ANNEXseq/issues"
