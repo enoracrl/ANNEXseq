@@ -1,5 +1,7 @@
 FROM mambaorg/micromamba:0.25.1
 
+USER root
+
 COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
 
 RUN apt-get update && \
