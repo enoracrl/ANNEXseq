@@ -50,18 +50,19 @@ med_length = gene %>%
 len = gene %>%
   ggplot(aes(x = length, fill = paste(gene_biotype, discovery))) +
   ggtitle("Gene length distribution") +
-  geom_vline(data = med_length,
-             aes(
-               xintercept = median,
-               color = paste(gene_biotype, discovery)
-             ),
-             size = 1) +
+  geom_vline(
+    data = med_length,
+    aes(
+      xintercept = median,
+      color = paste(gene_biotype, discovery)
+    ),
+    size = 1) +
   geom_density(alpha = 0.8) +
   scale_x_log10(
     breaks = scales::trans_breaks("log10", function(x)
       10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    labels = scales::trans_format(
+      "log10", scales::math_format(10 ^.x))
   ) +
   facet_grid(gene_biotype ~ .) +
   scale_fill_manual(values = brew) +
@@ -75,9 +76,10 @@ iso = gene %>%
   mutate(isoformes = ifelse(nb_transcripts == 1, "1", "2+")) %>%
   ggplot(aes(x = discovery, fill = isoformes)) +
   ggtitle("Proportion of mono versus multi-isoform genes") +
-  geom_bar(position = "fill",
-           alpha = 0.8,
-           colour = "black") +
+  geom_bar(
+    position = "fill",
+    alpha = 0.8,
+    colour = "black") +
   scale_y_continuous(labels = scales::percent) +
   facet_grid(~ gene_biotype) +
   scale_fill_manual(values = palette) +
@@ -87,9 +89,10 @@ iso = gene %>%
 # Nombre de gène chaque catégorie
 count = ggplot(data = gene, aes(x = gene_biotype, fill = paste(gene_biotype, discovery))) +
   ggtitle("Number of genes") +
-  geom_bar(colour = "black",
-           alpha = 0.8,
-           position = "dodge") +
+  geom_bar(
+    colour = "black",
+    alpha = 0.8,
+    position = "dodge") +
   scale_fill_manual(values = brew) +
   guides(fill = guide_legend("Source")) +
   geom_text(
@@ -119,10 +122,8 @@ gene_counts = gene %>%
   xlab("Gene counts") +
   theme(axis.title.y = element_blank()) +
   scale_x_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", function(x)10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^.x))
   )
 
 # Hist of gene validate by X samples
@@ -163,10 +164,8 @@ gene_counts_sample = gene %>%
   xlab("Gene counts") +
   ylab("Number of samples") +
   scale_x_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", function(x)10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^.x))
   )
 
 # Heatmap Nb_isoforms and samples
@@ -181,8 +180,7 @@ gene_tx_samples = gene %>%
   guides(fill=FALSE) +
   ggtitle("Number of novel genes (log) based on isoform\nnumber and number of samples with at least 1 count") +
   geom_tile() +
-  labs(x = "Number of samples with at least 1 count", y = "Number of isoforms", fill =
-         "log(count)") +
+  labs(x = "Number of samples with at least 1 count", y = "Number of isoforms", fill = "log(count)") +
   scale_fill_viridis()
 
 # 5'-3' extensions count
@@ -192,9 +190,10 @@ gene_ext = gene %>%
                       ifelse(ext_5 > 0, "5'", "3'"))) %>%
   ggplot(aes(x = gene_biotype, fill = ext)) +
   ggtitle("Number of 5' and 3' gene extensions") +
-  geom_bar(colour = "black",
-           alpha = 0.8,
-           position = position_dodge()) +
+  geom_bar(
+    colour = "black",
+    alpha = 0.8,
+    position = position_dodge()) +
   scale_fill_manual(values = palette) +
   theme(legend.position = "top") +
   theme(axis.title.x = element_blank()) +
@@ -215,10 +214,8 @@ gene_ext_dist = gene %>%
   geom_density(alpha = 0.5) +
   facet_grid(variable ~ ., labeller = labeller(variable = labels)) +
   scale_x_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", function(x)10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^.x))
   ) +
   theme(legend.position = "top") +
   guides(fill = guide_legend("Source")) +
