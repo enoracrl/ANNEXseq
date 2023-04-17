@@ -22,6 +22,15 @@ if (params.input) {
 }
 // Check TransforKmers parameters
 
+if (params.extend_annexa) {
+    if (params.filter) {
+        if (params.tfkmers_tokenizer) {
+            tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
+        } else { exit 1, "Please specify a valid transforkmers tokenizer path."}
+    }
+}
+
+
 
 // Function to check if running offline
 def isOffline() {

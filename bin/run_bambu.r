@@ -26,7 +26,6 @@ library(BSgenome)
 ################################################
 ################################################
 args = commandArgs(trailingOnly=TRUE)
-
 output_tag     <- strsplit(grep('--tag*', args, value = TRUE), split = '=')[[1]][[2]]
 ncore          <- strsplit(grep('--ncore*', args, value = TRUE), split = '=')[[1]][[2]]
 genomeseq      <- strsplit(grep('--fasta*', args, value = TRUE), split = '=')[[1]][[2]]

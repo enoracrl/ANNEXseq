@@ -26,7 +26,8 @@ process BAMBU {
         --tag=. \\
         --ncore=$task.cpus \\
         --annotation=$gtf \\
-        --fasta=$fasta $bams
+        --fasta=$fasta \\
+        $bams
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
