@@ -100,6 +100,28 @@ if (!params.skip_quantification) {
     }
 }
 
+if (!params.skip_annexa) {
+    if (params.protocol != 'cDNA') {
+        exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'cDNA'"
+    }
+    else{
+        if (params.filter) {
+            if (params.tfkmers_model) {
+                model = Channel.fromPath(params.tfkmers_model, checkIfExists: true)
+            } 
+            else { 
+                exit 1, "Please specify a valid transforkmers model path."
+            }
+
+            if (params.tfkmers_tokenizer) {
+                tokenizer = Channel.fromPath(params.tfkmers_tokenizer, checkIfExists: true)
+            }
+            else {
+                exit 1, "Please specify a valid transforkmers tokenizer path."
+            }
+        }
+    }
+}
 ////////////////////////////////////////////////////
 /* --          CONFIG FILES                    -- */
 ////////////////////////////////////////////////////
@@ -110,7 +132,6 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ////////////////////////////////////////////////////
 /* --    IMPORT LOCAL MODULES/SUBWORKFLOWS     -- */
 ////////////////////////////////////////////////////
-
 
 // nanoseq modules
 include { GET_TEST_DATA         } from '../modules/local/get_test_data'
@@ -211,8 +232,16 @@ workflow ANNEXSEQ{
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
+    /*
     INPUT_TK ( ch_input, ch_input_path )
+        .unique()
         .set { ch_model }
+    */
+    
+    ch_sample
+        .map { it -> [it[3]] }
+        .unique()
+        .set { ch_gtf }
 
     ////// ici subworkflow
 
@@ -401,6 +430,8 @@ workflow ANNEXSEQ{
             /*
              * MODULE: Quantification and novel isoform detection with bambu
              */
+            
+            VALIDATE_INPUT_GTF(ch_gtf)
             BAMBU ( ch_sample_annotation, ch_sortbam.collect{ it [1] } )
             ch_gene_counts       = BAMBU.out.ch_gene_counts
             ch_transcript_counts = BAMBU.out.ch_transcript_counts
@@ -410,56 +441,58 @@ workflow ANNEXSEQ{
 
             // ANNEXA
 
-                if (params.extend_annexa) {
-                    ///////////////////////////////////////////////////////////////////////////
-                    // PROCESS INPUT FILES
-                    ///////////////////////////////////////////////////////////////////////////
-                    samples = Channel //////////////////// à modifier
-                        .fromPath(input)
-                        .splitCsv()
-                        .map { it ->
-                                workflow.profile.contains('test') ?
-                                file("${baseDir}/${it[0]}", checkIfExists: true) :
-                                file(it[0], checkIfExists: true) }
+            if (!params.skip_annexa) {
+                ///////////////////////////////////////////////////////////////////////////
+                // PROCESS INPUT FILES
+                ///////////////////////////////////////////////////////////////////////////
+                /* samples = Channel
+                    .fromPath(input)
+                    .splitCsv()
+                    .map { it ->
+                            workflow.profile.contains('test') ?
+                            file("${baseDir}/${it[0]}", checkIfExists: true) :
+                            file(it[0], checkIfExists: true) } */
+                // ca degage INDEX_BAM(ch_sortbam) // pas sur
 
-                    VALIDATE_INPUT_GTF(ch_gtf_bed)
-                    // ca degage INDEX_BAM(ch_sortbam) // pas sur
+                ///////////////////////////////////////////////////////////////////////////
+                // NEW TRANSCRIPTS DISCOVERY
+                ///////////////////////////////////////////////////////////////////////////
+                //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
+                BAMBU_SPLIT_RESULTS(ch_gtf_bed)
 
-                    ///////////////////////////////////////////////////////////////////////////
-                    // NEW TRANSCRIPTS DISCOVERY
-                    ///////////////////////////////////////////////////////////////////////////
-                    //BAMBU(samples.collect(), VALIDATE_INPUT_GTF.out, ref_fa)
-                    BAMBU_SPLIT_RESULTS(ch_gtf_bed)
+                ch_fasta
+                    .map { it -> [ it[1]] }  // [ gtf, annotation_str ]
+                    .set { fasta }
 
-                    ///////////////////////////////////////////////////////////////////////////
-                    // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
-                    ///////////////////////////////////////////////////////////////////////////
-                    FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, ch_fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
-                    FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
-                    RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
-                    MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
+                ///////////////////////////////////////////////////////////////////////////
+                // EXTRACT AND CLASSIFY NEW TRANSCRIPTS, AND PERFORM QC
+                ///////////////////////////////////////////////////////////////////////////
+                FEELNC_CODPOT(VALIDATE_INPUT_GTF.out, fasta, BAMBU_SPLIT_RESULTS.out.novel_genes) //ok, petit doute sur ch_fasta (ref_fa)
+                FEELNC_FORMAT(FEELNC_CODPOT.out.mRNA, FEELNC_CODPOT.out.lncRNA)
+                RESTORE_BIOTYPE(VALIDATE_INPUT_GTF.out, BAMBU_SPLIT_RESULTS.out.novel_isoforms)
+                MERGE_NOVEL(FEELNC_FORMAT.out, RESTORE_BIOTYPE.out) // petit ok
 
-                    QC_FULL(ch_sortbam,
-                            SAMTOOLS_INDEX.out.bai,
-                            MERGE_NOVEL.out,
+                QC_FULL(ch_sortbam,
+                        BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
+                        MERGE_NOVEL.out.novel_full,
+                        VALIDATE_INPUT_GTF.out,
+                        BAMBU.out.ch_gene_counts,
+                        "full")
+
+                ///////////////////////////////////////////////////////////////////////////
+                // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
+                ///////////////////////////////////////////////////////////////////////////
+                if(params.filter) {
+                    TFKMERS(MERGE_NOVEL.out.novel_full, fasta, ch_ndr, //doute sur ch_fasta
+                            tokenizer, model, ch_transcript_counts)
+                    QC_FILTER(ch_sortbam,
+                            BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
+                            TFKMERS.out.gtf,
                             VALIDATE_INPUT_GTF.out,
-                            BAMBU.out.gene_counts,
-                            "full")
-
-                    ///////////////////////////////////////////////////////////////////////////
-                    // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
-                    ///////////////////////////////////////////////////////////////////////////
-                    if(params.filter) {
-                        TFKMERS(MERGE_NOVEL.out, ch_fasta, ch_ndr, //doute sur ch_fasta
-                                tokenizer, ch_model, ch_transcript_counts)
-                        QC_FILTER(ch_sortbam,
-                                SAMTOOLS_INDEX.out.bai,
-                                TFKMERS.out.gtf,
-                                VALIDATE_INPUT_GTF.out,
-                                ch_gene_counts,
-                                "filter")
-                    }
+                            ch_gene_counts,
+                            "filter")
                 }
+            }
 
                 // END ANNEXA
 

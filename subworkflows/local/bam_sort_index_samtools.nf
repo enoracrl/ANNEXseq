@@ -34,6 +34,7 @@ workflow BAM_SORT_INDEX_SAMTOOLS {
             .join( SAMTOOLS_INDEX.out.bai )
             .map { it -> [ it[0], it[1], it[2], it[4], it[5] ] }
             .set { sortbam }
+        bai = SAMTOOLS_INDEX.out.bai
         BAM_STATS_SAMTOOLS ( SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai, by: [0]), ch_fasta )
     }
 
@@ -49,6 +50,7 @@ workflow BAM_SORT_INDEX_SAMTOOLS {
 
     emit:
     sortbam
+    bai
     sortbam_stats_multiqc
     samtools_versions
 }

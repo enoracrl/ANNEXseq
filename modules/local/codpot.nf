@@ -1,7 +1,7 @@
 process FEELNC_CODPOT {
   conda (params.enable_conda ? "bioconda::feelnc=0.2" : null)
-  container "${ workflow.containerEngine == 'singularity' ? 
-                'https://depot.galaxyproject.org/singularity/feelnc:0.2--pl526_0' : 
+  container "${ workflow.containerEngine == 'singularity' ?
+                'https://depot.galaxyproject.org/singularity/feelnc:0.2--pl526_0' :
                 'quay.io/biocontainers/feelnc:0.2--pl526_0' }"
   memory params.maxMemory
 
@@ -30,7 +30,7 @@ process FEELNC_CODPOT {
       -l known_lncRNA.gtf \
       --numtx=3000,3000 \
       -o new
-  
+
   # consider new noORF transcripts as new lncRNA
   if [ -e feelnc_codpot_out/new.noORF.gtf ]; then
     cat feelnc_codpot_out/new.noORF.gtf >> feelnc_codpot_out/new.lncRNA.gtf

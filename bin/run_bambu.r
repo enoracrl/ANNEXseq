@@ -51,7 +51,7 @@ se <- bambu(
     verbose = TRUE,
     NDR = 1,
     opt.discovery = list(
-        # min.readCount = 5,
+        #min.readCount = 5,
         min.txScore.singleExon = 0)
     )
 

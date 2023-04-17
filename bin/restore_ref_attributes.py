@@ -2,7 +2,6 @@
 # Retrieve biotypes in new isoforms from input annotation
 import argparse
 from GTF import GTF, Attributes
-
 parser = argparse.ArgumentParser(description="Restore ref attributes in novel gtf.")
 parser.add_argument("-gtf", type=argparse.FileType("r"), help="gtf to restore", required=True)
 parser.add_argument(
