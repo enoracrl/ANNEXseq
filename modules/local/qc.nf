@@ -15,7 +15,7 @@ workflow QC {
     MERGE_ANNOTATIONS(novel_gtf, ref_gtf, origin)
 
     REPORT(
-      MERGE_ANNOTATIONS.out.extended_full,
+      MERGE_ANNOTATIONS.out,
       ref_gtf,
       counts_gene,
       origin
