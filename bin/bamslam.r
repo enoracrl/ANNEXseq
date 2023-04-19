@@ -57,7 +57,7 @@ main <- function() {
     bam_data <- as.data.frame(bam %>% setNames(NULL), stringsAsFactors = FALSE) %>% # change the GAlignment object to a data frame object
     dplyr::select(-cigar) %>%
     dplyr::select(-njunc) %>%
-    dplyr::mutate(new_ref = if_else(grepl('tx.', seqnames) == T, 'new', 'ref')) # create a column 'new_ref', and for each transcript if it new (start with 'tx.'), 'new_ref' takes value 'new', else it takes 'ref'
+    dplyr::mutate(new_ref = if_else(grepl('BambuTx.', seqnames) == T, 'new', 'ref')) # create a column 'new_ref', and for each transcript if it is new (start with 'BambuTx.'), 'new_ref' takes value 'new', else it takes 'ref'
 
     bam_data$new_ref <- as.factor(bam_data$new_ref)
 
