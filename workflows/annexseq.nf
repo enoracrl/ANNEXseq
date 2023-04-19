@@ -154,6 +154,7 @@ include { QC as QC_FULL; QC as QC_FILTER } from '../modules/local/qc.nf'
 
 // NEW modules
 include { EXT_TR             } from '../modules/local/extended_transcriptome.nf'
+include { MINIMAP2_BAMSLAM   } from '../modules/local/minimap2_bamslam.nf'
 
 /*
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -499,13 +500,22 @@ workflow ANNEXSEQ{
 
                 // END ANNEXA
             
-                // MAKE EXTENDED TRANSCRIPTOME
-            if (!params.skip_annexa) {
-                EXT_TR(QC_FULL.MERGE_ANNOTATIONS.out, fasta)
+            if (params.bamslam) {
 
-            } else {
-                EXT_TR(BAMBU.out.extended_gtf)
+                // MAKE EXTENDED TRANSCRIPTOME
+                if (!params.skip_annexa) {
+                    EXT_TR(QC_FULL.MERGE_ANNOTATIONS.out, fasta)
+
+                } else {
+                    EXT_TR(BAMBU.out.extended_gtf)
+                }
+
+                // ALIGN FASTQ ON EXTENDED TRANSCRIPTOME
+                MINIMAP2_BAMSLAM(EXT_TR.out.extended_transcriptome, ch_sample[6]) //pas sur que le ch_sample[6] soit le fastq de l'echantillon
+
             }
+                
+
 
         } else {
 
