@@ -1,0 +1,26 @@
+{
+  "name": "@enoracrl/annexseq",
+  "version": "1.0.1",
+  "description": "test",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enoracrl/ANNEXseq.git"
+  },
+  "author": "@enoracrl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/enoracrl/ANNEXseq/issues"
+  },
+  "publishConfig": {
+    "@enoracrl:registry": "https://npm.pkg.github.com"
+  },
+  "homepage": "https://github.com/enoracrl/ANNEXseq#readme"
+}

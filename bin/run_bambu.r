@@ -26,7 +26,6 @@ library(BSgenome)
 ################################################
 ################################################
 args = commandArgs(trailingOnly=TRUE)
-
 output_tag     <- strsplit(grep('--tag*', args, value = TRUE), split = '=')[[1]][[2]]
 ncore          <- strsplit(grep('--ncore*', args, value = TRUE), split = '=')[[1]][[2]]
 genomeseq      <- strsplit(grep('--fasta*', args, value = TRUE), split = '=')[[1]][[2]]
@@ -50,17 +49,17 @@ se <- bambu(
     genome = genomeSequence,
     ncore = ncore,
     verbose = TRUE,
+    NDR = 1,
     opt.discovery = list(
-        min.readCount = 5,
-        max.txNDR = 1,
+        #min.readCount = 5,
         min.txScore.singleExon = 0)
     )
 
 # Extract NDR
-tx_infos   <- se@rowRanges@elementMetadata@listData
-new_tx_idx <- tx_infos[["newTxClass"]] != "annotation"
+tx_infos <- se@rowRanges@elementMetadata
+new_tx_idx <- tx_infos[tx_infos$novelTranscript == "TRUE" & tx_infos$txClassDescription != "annotation", c(1,2,3) ]
 write.csv(
-    data.frame(tx_infos[c("GENEID", "TXNAME", "txNDR")])[new_tx_idx,],
+    new_tx_idx,
     "bambu_ndr.csv",
     quote = FALSE,
     row.names = FALSE
