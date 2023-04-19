@@ -13,8 +13,8 @@ process FILTER {
 
   output:
   path "novel.filter.gtf", emit: gtf
-  path "counts_transcript.filter.txt"
-  path "counts_transcript.full.txt"
+  path "counts_transcript.filter.txt", emit: tr_count_filter
+  path "counts_transcript.full.txt", emit: tr_count_full
 
   """
   cp ${counts_tx} counts_transcript.full.txt

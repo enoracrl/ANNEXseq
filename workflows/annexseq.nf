@@ -521,13 +521,17 @@ workflow ANNEXSEQ{
             ch_featurecounts_transcript_multiqc = QUANTIFY_STRINGTIE_FEATURECOUNTS.out.featurecounts_transcript_multiqc.ifEmpty([])
         }
         if (!params.skip_differential_analysis) {
-
-            /*
-             * SUBWORKFLOW: Differential gene and transcript analysis with DESeq2 and DEXseq
-             */
+            if (!params.skip_annexa){
+                if (!params.full){
+                    ch_transcript_counts = TFKMERS.FILTER.out.tr_count_full
+                }
+                else {
+                    ch_transcript_counts = TFKMERS.FILTER.out.tr_count_filter
+                }
             DIFFERENTIAL_DESEQ2_DEXSEQ( ch_gene_counts, ch_transcript_counts )
             ch_software_versions = ch_software_versions.mix(DIFFERENTIAL_DESEQ2_DEXSEQ.out.deseq2_version.first().ifEmpty(null))
             ch_software_versions = ch_software_versions.mix(DIFFERENTIAL_DESEQ2_DEXSEQ.out.dexseq_version.first().ifEmpty(null))
+            }
         }
     }
 
