@@ -152,6 +152,9 @@ include { MERGE_NOVEL                    } from '../modules/local/merge_novel.nf
 include { TFKMERS                        } from '../modules/local/transforkmers.nf'
 include { QC as QC_FULL; QC as QC_FILTER } from '../modules/local/qc.nf'
 
+// NEW modules
+include { EXT_TR             } from '../modules/local/extended_transcriptome.nf'
+
 /*
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
  */
@@ -495,6 +498,14 @@ workflow ANNEXSEQ{
             }
 
                 // END ANNEXA
+            
+                // MAKE EXTENDED TRANSCRIPTOME
+            if (!params.skip_annexa) {
+                EXT_TR(QC_FULL.MERGE_ANNOTATIONS.out, fasta)
+
+            } else {
+                EXT_TR(BAMBU.out.extended_gtf)
+            }
 
         } else {
 
