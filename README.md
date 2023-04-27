@@ -59,9 +59,8 @@ ANNEXA pipeline takes a reference genome, a reference annotation, and mapping fi
 
 A graphical overview of suggested routes through the pipeline depending on the desired output can be seen below.
 
-## TODO : replace chart with ANNEXAseq pipeline
 <p align="center">
-    <img src="docs/images/nanoseq_subwaymap_v3.1.png" alt="nf-core/nanoseq metro map" width="90%"
+    <img src="assets/metro-map_ANNEXseq.png" alt="nf-core/nanoseq metro map" width="90%"
 </p>
 
 ## Quick Start
