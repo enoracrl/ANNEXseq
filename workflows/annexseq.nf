@@ -482,29 +482,29 @@ workflow ANNEXSEQ{
                         BAMBU.out.ch_gene_counts,
                         "full")
 
-                ///////////////////////////////////////////////////////////////////////////
-                // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
-                ///////////////////////////////////////////////////////////////////////////
-                if(params.filter) {
-                    TFKMERS(MERGE_NOVEL.out.novel_full, fasta, ch_ndr, //doute sur ch_fasta
-                            tokenizer, model, ch_transcript_counts)
-                    QC_FILTER(ch_sortbam,
-                            BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
-                            TFKMERS.out.gtf,
-                            VALIDATE_INPUT_GTF.out,
-                            ch_gene_counts,
-                            "filter")
-                }
+                    ///////////////////////////////////////////////////////////////////////////
+                    // FILTER NEW TRANSCRIPTS, AND QC ON FILTERED ANNOTATION
+                    ///////////////////////////////////////////////////////////////////////////
+                    if(params.filter) {
+                        TFKMERS(MERGE_NOVEL.out.novel_full, fasta, ch_ndr, //doute sur ch_fasta
+                                tokenizer, model, ch_transcript_counts)
+                        QC_FILTER(ch_sortbam,
+                                BAM_SORT_INDEX_SAMTOOLS.out.bai, //ok
+                                TFKMERS.out.gtf,
+                                VALIDATE_INPUT_GTF.out,
+                                ch_gene_counts,
+                                "filter")
+                    }
             }
 
                 // END ANNEXA
             
                 // MAKE EXTENDED TRANSCRIPTOME
             if (!params.skip_annexa) {
-                EXT_TR(QC_FULL.MERGE_ANNOTATIONS.out, fasta)
+                EXT_TR(QC_FULL.out.extended_gtf, fasta) // extended annotation, reference genome
 
             } else {
-                EXT_TR(BAMBU.out.extended_gtf)
+                EXT_TR(BAMBU.out.extended_gtf, fasta)
             }
 
         } else {
@@ -520,13 +520,15 @@ workflow ANNEXSEQ{
             ch_featurecounts_gene_multiqc       = QUANTIFY_STRINGTIE_FEATURECOUNTS.out.featurecounts_gene_multiqc.ifEmpty([])
             ch_featurecounts_transcript_multiqc = QUANTIFY_STRINGTIE_FEATURECOUNTS.out.featurecounts_transcript_multiqc.ifEmpty([])
         }
+
+        
         if (!params.skip_differential_analysis) {
             if (!params.skip_annexa){
                 if (!params.full){
-                    ch_transcript_counts = TFKMERS.FILTER.out.tr_count_full
+                    ch_transcript_counts = TFKMERS.out.ch_transcript_counts_full
                 }
                 else {
-                    ch_transcript_counts = TFKMERS.FILTER.out.tr_count_filter
+                    ch_transcript_counts = TFKMERS.out.ch_transcript_counts_filter
                 }
             DIFFERENTIAL_DESEQ2_DEXSEQ( ch_gene_counts, ch_transcript_counts )
             ch_software_versions = ch_software_versions.mix(DIFFERENTIAL_DESEQ2_DEXSEQ.out.deseq2_version.first().ifEmpty(null))

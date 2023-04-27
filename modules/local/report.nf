@@ -2,6 +2,7 @@ process REPORT {
   conda (params.enable_conda ? "$baseDir/environment.yml" : null)
   container "ghcr.io/igdrion/annexa:${workflow.revision? workflow.revision: "dev"}"
   publishDir "$params.outdir/qc/${prefix}", mode: 'copy'
+  memory params.max_memory
 
   input:
   file gtf

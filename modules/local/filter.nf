@@ -4,6 +4,7 @@ process FILTER {
                 'https://depot.galaxyproject.org/singularity/python:3.10.4' : 
                 'quay.io/biocontainers/python:3.10.4' }"
   publishDir "$params.outdir/final", mode: 'copy'
+  memory '80 GB'
 
   input:
   file novel

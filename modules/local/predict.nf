@@ -3,8 +3,9 @@ process PREDICT {
   container "ghcr.io/igdrion/annexa:${workflow.revision? workflow.revision: "dev"}"
   publishDir "$params.outdir/transforkmers", mode: 'copy'
 
-  cpus params.maxCpu
-  memory '16GB'
+  cpus '16'
+  memory '80 GB'
+  time '10h'
 
   input:
   file tss_sequences

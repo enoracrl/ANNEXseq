@@ -37,4 +37,6 @@ workflow TFKMERS {
 
   emit:
     gtf = FILTER.out.gtf
+    ch_transcript_counts_full = FILTER.out.tr_count_full
+    ch_transcript_counts_filter = FILTER.out.tr_count_filter
 }

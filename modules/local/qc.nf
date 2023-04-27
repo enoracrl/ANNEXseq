@@ -30,4 +30,7 @@ workflow QC {
         origin
       )
     }
+
+    emit:
+    extended_gtf = MERGE_ANNOTATIONS.out
 }
