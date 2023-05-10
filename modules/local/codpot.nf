@@ -3,7 +3,8 @@ process FEELNC_CODPOT {
   container "${ workflow.containerEngine == 'singularity' ?
                 'https://depot.galaxyproject.org/singularity/feelnc:0.2--pl526_0' :
                 'quay.io/biocontainers/feelnc:0.2--pl526_0' }"
-  memory params.maxMemory
+  memory '80.GB'
+  time '10h'
 
   input:
   file ref

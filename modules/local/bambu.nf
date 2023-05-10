@@ -1,5 +1,5 @@
 process BAMBU {
-    label 'process_medium'
+    label 'process_high'
 
     conda "conda-forge::r-base=4.0.3 bioconda::bioconductor-bambu=3.0.8 bioconda::bioconductor-bsgenome=1.66.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
