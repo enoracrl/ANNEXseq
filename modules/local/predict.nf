@@ -1,5 +1,7 @@
 process PREDICT {
-  label 'process_high'
+  time '24.h'
+  cpus 6
+  memory '84 GB'
 
   conda (params.enable_conda ? "$baseDir/environment.yml" : null)
   container "ghcr.io/igdrion/annexa:${workflow.revision? workflow.revision: "dev"}"
