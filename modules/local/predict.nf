@@ -1,11 +1,12 @@
 process PREDICT {
+  
   conda (params.enable_conda ? "$baseDir/environment.yml" : null)
   container "ghcr.io/igdrion/annexa:${workflow.revision? workflow.revision: "dev"}"
   publishDir "$params.outdir/transforkmers", mode: 'copy'
 
-  time '24.h'
-  cpus 16
-  memory '80 GB'
+  time '120h'
+  cpus 8
+  memory '42 GB'
 
   input:
   file tss_sequences
