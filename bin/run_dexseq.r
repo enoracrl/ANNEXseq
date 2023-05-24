@@ -16,9 +16,9 @@
 ################################################
 ################################################
 
-library(DRIMSeq)
-library(DEXSeq)
-library(stageR)
+suppressMessages(library(DRIMSeq))
+suppressMessages(library(DEXSeq))
+suppressMessages(library(stageR))
 
 ################################################
 ################################################
@@ -75,6 +75,7 @@ for (i in length(condition_names):1){
 cat(paste(sampleinfo$sample_id, collapse = " "))
 cat(paste(colnames(count.matrix), collapse = " "))
 d <- dmDSdata(counts=count.matrix, samples=sampleinfo)
+
 # include genes expressed in minimal min_samps_gene_expr samples with min_gene_expr
 # include transcripts expressed in min_samps_feature_expr samples with min_feature_expr;
 # include transcripts expressed in min_samps_feature_prop samples with min_feature_prop;
@@ -98,7 +99,7 @@ dFilter <- dmFilter(d,
 
 formulaFullModel <- as.formula("~sample + exon + condition:exon")
 dxd <- DEXSeqDataSet(countData=round(as.matrix(counts(dFilter)[,-c(1:2)])),
-                    sampleData=DRIMSeq::samples(dFilter),
+                    sampleData=sampleinfo,
                     design=formulaFullModel,
                     featureID = counts(dFilter)$feature_id,
                     groupID=counts(dFilter)$gene_id)
@@ -121,7 +122,7 @@ strp <- function(x) substr(x,1,15)
 qval <- perGeneQValue(dxr)
 dxr.g <- data.frame(gene=names(qval),qval)
 
-columns <- c("featureID","groupID","pvalue",lgcolName)
+columns <- c("featureID","groupID","pvalue")
 dxr_pval <- as.data.frame(dxr[,columns])
 #head(dxr_pval)
 pConfirmation <- matrix(dxr_pval$pvalue,ncol=1)
