@@ -101,8 +101,8 @@ if (!params.skip_quantification) {
 }
 
 if (!params.skip_annexa) {
-    if (params.protocol != 'cDNA') {
-        exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'cDNA'"
+    if (params.protocol != 'cDNA' && params.protocol != 'directRNA') {
+        exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'cDNA', 'directRNA'"
     }
     else{
         if (params.filter) {
