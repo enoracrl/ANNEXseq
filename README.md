@@ -1,3 +1,7 @@
+---
+⚠️ Code has been moved to
+[IGDRIon/ANNEXseq](https://github.com/IGDRIon/ANNEXseq.git) ⚠️
+---
 
 ## Introduction
 ANNEXAseq is a bioinformatics analysis pipeline for LR-RNAseq data (Long-Read RNASeq). It works by performing basecalling, demultiplexing, QC, alignment on Nanopore RNA data using the *nf-core/nanoseq* pipeline, and then reconstructs and quantifies both known, novel genes and isoforms using the *ANNEXA* pipeline.
